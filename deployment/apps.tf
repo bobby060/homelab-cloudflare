@@ -27,6 +27,12 @@ locals {
       access    = ["admins"]
       type      = "ssh"
     }
+    anylist-mcp = {
+      name      = "Anylist MCP"
+      subdomain = "anylist-mcp"
+      service   = "http://anylist-mcp:3000"
+    }
+
     # blog = {
     #   name      = "Blog"
     #   subdomain = "blog"
