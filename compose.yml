@@ -1,0 +1,13 @@
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:2026.10.1   # pin a version
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+      TUNNEL_TRANSPORT_PROTOCOL: http2
+    restart: unless-stopped
+    networks: [tunnel]
+
+networks:
+  tunnel:
+    external: true

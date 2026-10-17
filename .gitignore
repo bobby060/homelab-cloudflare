@@ -1,0 +1,11 @@
+# Secrets
+*.tfvars
+!*.tfvars.example
+*.env
+
+# Terraform state contains the tunnel secret and token in plain text
+*.tfstate
+*.tfstate.*
+.terraform/
+crash.log
+crash.*.log

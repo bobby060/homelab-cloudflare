@@ -1,0 +1,8 @@
+# Copy to terraform.tfvars (gitignored) and fill in.
+# Both IDs are on the domain's Overview page in the Cloudflare dashboard.
+account_id = "your-account-id"
+zone_id    = "your-zone-id"
+domain     = "example.com"
+
+admin_emails  = ["you@example.com"]
+family_emails = ["someone@example.com"]
