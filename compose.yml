@@ -6,6 +6,8 @@ services:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN}
       TUNNEL_TRANSPORT_PROTOCOL: http2
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # lets ssh:// ingress reach the host's sshd
     networks: [tunnel]
 
 networks:

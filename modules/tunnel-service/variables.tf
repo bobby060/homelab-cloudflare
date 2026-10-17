@@ -30,6 +30,12 @@ variable "access_policy_ids" {
   default = [] # empty = no Access, publicly reachable
 }
 
+variable "app_type" {
+  type        = string
+  description = "access application type; \"ssh\" adds a browser-rendered terminal"
+  default     = "self_hosted"
+}
+
 variable "session_duration" {
   type    = string
   default = "24h"

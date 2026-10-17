@@ -71,7 +71,7 @@ From the `deployment` folder
 
 `terraform init`, `terraform plan`, then `terraform apply`
 
-Get the tunnel token from terraform
+6. Get the tunnel token from terraform
 
 ```bash
 terraform output -raw tunnel_token
@@ -83,11 +83,33 @@ Put that in a .env file in this repo root (same level as this README.md)
 TUNNEL_TOKEN=<your token>
 ```
 
-6. Run `docker compose up -d` to deploy the tunnel.
+7. Run `docker compose up -d` to deploy the tunnel.
 
 Badabing, everything should work.
 
+## SSH
+
+The `ssh` entry in `apps.tf` exposes this machine's sshd at `ssh.<domain>`, behind the admins policy. cloudflared reaches the host through `host.docker.internal` (set in `compose.yml`). If ufw is on, allow the docker network to reach port 22:
+
+```bash
+sudo ufw allow from 172.18.0.0/16 to any port 22 proto tcp
+```
+
+
+### Client SSH Access Instructions
+**From a terminal:** install `cloudflared` on your laptop and add to `~/.ssh/config`:
+
+```text
+Host ssh.<domain>.com
+  ProxyCommand cloudflared access ssh --hostname %h
+  User <server username>
+  
+```
+
+Then `ssh ssh.<domain>.com`. The first connection opens a browser for the Access login.
+
+**From a browser:** open `https://ssh.<domain>.com`, log in through Access, then enter your username and private key (or password if you don't do the SEC in DevSecOps)
+
 ## Notes
 
-- `terraform.tfstate` holds the tunnel secret and token in plain text. It's gitignored; keep it out of the repo.
-- Native/mobile clients (e.g. the Immich app) can't complete the Access browser login. They need a service token or a bypass policy.
+- Native/mobile clients (e.g. the Immich app) can't complete the Access browser login. They need a service token or a bypass policy, which will be a futher update to this repo

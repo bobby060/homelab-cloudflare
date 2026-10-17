@@ -12,7 +12,7 @@ resource "cloudflare_zero_trust_access_application" "this" {
   account_id       = var.account_id
   name             = var.name
   domain           = var.hostname
-  type             = "self_hosted"
+  type             = var.app_type
   session_duration = var.session_duration
 
   policies = [for i, id in var.access_policy_ids : {
