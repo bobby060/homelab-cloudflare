@@ -63,7 +63,7 @@ Fill in your account ID, zone ID, domain, and the emails for each group.
 
 4. Add each app to terraform
 
-Add an entry to the `services` map in `deployment/apps.tf` (there are examples there). Set `access` to policy names from `groups.tf`, or leave it out to make the service public.
+Add an entry to the `services` map in `deployment/apps.tf` (there are examples there). Set `access` to policy names from `groups.tf`, or leave it out to make the service public. If native or mobile apps need to reach the service, also set `service_token = true` (see [App access with service tokens](#app-access-with-service-tokens)).
 
 5. Apply terraform
 
@@ -110,6 +110,44 @@ Then `ssh ssh.<domain>.com`. The first connection opens a browser for the Access
 
 **From a browser:** open `https://ssh.<domain>.com`, log in through Access, then enter your username and private key (or password if you don't do the SEC in DevSecOps)
 
-## Notes
+## App access with service tokens
 
-- Native/mobile clients (e.g. the Immich app) can't complete the Access browser login. They need a service token or a bypass policy, which will be a futher update to this repo
+Native and mobile clients (e.g. the Karakeep or Immich apps) can't complete the Access browser login. If the client lets you set custom headers, give the service an Access service token instead:
+
+```hcl
+karakeep = {
+  name          = "Karakeep"
+  subdomain     = "karakeep"
+  service       = "http://karakeep:3000"
+  access        = ["admins"]   # browser logins still work
+  service_token = true
+}
+```
+
+This creates a service token and a `non_identity` (Service Auth) policy for that app. `access` is optional when `service_token` is set, so you can have an app that only accepts the token.
+
+After `terraform apply`, get the credentials:
+
+```bash
+terraform output -json service_tokens
+```
+
+Then configure the client to send these headers on every request:
+
+```text
+CF-Access-Client-Id: <client_id>
+CF-Access-Client-Secret: <client_secret>
+```
+
+The app's own auth (e.g. Karakeep's API key in `Authorization`) is unaffected.
+
+**Single-header clients:** if the client can only send one custom header, also set `service_token_header = "X-Access-Token"` (any name). The client then sends that header with a JSON value:
+
+```text
+X-Access-Token: {"cf-access-client-id":"<client_id>","cf-access-client-secret":"<client_secret>"}
+```
+
+**Notes:**
+- Tokens expire after one year by default, after which the app will be blocked. Set `service_token_duration = "forever"` on the service for a non-expiring token.
+- The client secret is stored in plain text in `terraform.tfstate`, so keep that file private.
+- Anyone with the token gets through Access, so treat it like a password.

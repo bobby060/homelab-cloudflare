@@ -41,3 +41,20 @@ variable "session_duration" {
   default = "24h"
 }
 
+variable "service_token" {
+  type        = bool
+  description = "create an Access service token (and non_identity policy) so apps can authenticate with headers"
+  default     = false
+}
+
+variable "service_token_header" {
+  type        = string
+  description = "optional single header name that carries the service token as JSON, for clients that can only send one header"
+  default     = null
+}
+
+variable "service_token_duration" {
+  type        = string
+  description = "service token lifetime, e.g. \"8760h\" or \"forever\""
+  default     = "8760h"
+}
