@@ -3,6 +3,9 @@
 !*.tfvars.example
 *.env
 
+# customized locals.tf
+deployment/locals.tf
+
 # Terraform state contains the tunnel secret and token in plain text
 *.tfstate
 *.tfstate.*

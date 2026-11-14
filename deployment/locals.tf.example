@@ -1,0 +1,56 @@
+# Each entry represents a DNS record, an ingress rule, and (if `access` is set) an Access app.
+#
+#   subdomain        -> <subdomain>.<domain>
+#   service          -> container address on the shared `tunnel` docker network
+#   access           -> policy names from local.access_policies in groups.tf; empty = public
+#   session_duration -> how long an Access login lasts (default 24h)
+#   type             -> Access app type (default self_hosted); "ssh" adds a browser terminal
+#   service_token    -> true = also create a service token so apps can auth via headers
+#                       (CF-Access-Client-Id / CF-Access-Client-Secret); see `terraform output service_tokens`
+#   service_token_duration -> token lifetime (default 8760h); "forever" = never expires
+#   service_token_header -> optional single header name carrying {"cf-access-client-id":..,"cf-access-client-secret":..}
+locals {
+  services = {
+    # immich = {
+    #   name             = "Immich"
+    #   subdomain        = "photos"
+    #   service          = "http://immich-server:2283"
+    #   access           = ["family"]
+    #   sessiion_duration = "720h"
+    #   service_token =   true
+    # }
+    # How to add this host via ssh
+    ssh = {
+      name      = "SSH"
+      subdomain = "ssh"
+      service   = "ssh://host.docker.internal:22"
+      access    = ["admins"]
+      type      = "ssh"
+    }
+    # A service with no access groups
+    anylist-mcp = {
+      name      = "Anylist MCP"
+      subdomain = "anylist-mcp"
+      service   = "http://anylist-mcp:3000"
+    }
+    karakeep = {
+      name          = "Karakeep"
+      subdomain     = "karakeep"
+      service       = "http://karakeep:3000"
+      access        = ["admins"]
+      service_token = true
+    }
+    uptime-kuma = {
+      name      = "Uptime Kuma"
+      subdomain = "up"
+      service   = "http://uptime-kuma:3001"
+      access    = ["admins"]
+    }
+    # blog = {
+    #   name      = "Blog"
+    #   subdomain = "blog"
+    #   service   = "http://blog:80"
+    #   # no access, so it's public
+    # }
+  }
+}

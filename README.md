@@ -1,5 +1,5 @@
 # Cloudflare tunnels with terraform
-This repo uses Terraform to expose local apps running on docker as zero trust cloudflare tunnel applications
+This repo uses Terraform to expose local apps running on docker as zero trust cloudflare tunnel applications. For my previous homelab setup, I did everything via the cloudflare web portal quick quickly gets tedious. 
 
 There are three components to this:
 
@@ -8,9 +8,9 @@ Services are entries in the `services` map in `deployment/apps.tf`. Access group
 
 Access apps allow every login method set up in your Zero Trust organization.
 
-2. **Cloudflared container** (`compose.yml`)
+2. **Cloudflared container** (`compose.yml`). This is where the connection to the cloudflare tunnel terraform created actually happens.
 
-3. **Shared docker network** that cloudflared and every app join
+3. **Shared docker network** that cloudflared and every app join, this lets the tunnel "see" the services it will expose.
 
 ## Prerequisites
 
@@ -57,13 +57,14 @@ The service or container name (`immich-server` here) is the host you use in the 
 
 ```bash
 cp deployment/terraform.tfvars.example deployment/terraform.tfvars
+cp deployment/locals.example.tf deployment/locals.tf
 ```
 
 Fill in your account ID, zone ID, domain, and the emails for each group.
 
 4. Add each app to terraform
 
-Add an entry to the `services` map in `deployment/apps.tf` (there are examples there). Set `access` to policy names from `groups.tf`, or leave it out to make the service public. If native or mobile apps need to reach the service, also set `service_token = true` (see [App access with service tokens](#app-access-with-service-tokens)).
+Add an entry to the `services` map in `deployment/locals.tf` (there are examples there). Set `access` to policy names from `groups.tf`, or leave it out to make the service public. If native or mobile apps need to reach the service, also set `service_token = true` (see [App access with service tokens](#app-access-with-service-tokens)).
 
 5. Apply terraform
 
@@ -87,9 +88,11 @@ TUNNEL_TOKEN=<your token>
 
 Badabing, everything should work.
 
-## SSH
+## SSH Service
 
-The `ssh` entry in `apps.tf` exposes this machine's sshd at `ssh.<domain>`, behind the admins policy. cloudflared reaches the host through `host.docker.internal` (set in `compose.yml`). If ufw is on, allow the docker network to reach port 22:
+You can use this system to expose your machine securely via SSH.
+
+The `ssh` entry in `inlocals.tf` lets  at `ssh.<domain>`, behind the admins policy. cloudflared reaches the host through `host.docker.internal` (set in `compose.yml`). If ufw is on, allow the docker network to reach port 22:
 
 ```bash
 sudo ufw allow from 172.18.0.0/16 to any port 22 proto tcp
@@ -139,7 +142,7 @@ CF-Access-Client-Id: <client_id>
 CF-Access-Client-Secret: <client_secret>
 ```
 
-The app's own auth (e.g. Karakeep's API key in `Authorization`) is unaffected.
+The app's own auth is unaffected.
 
 **Single-header clients:** if the client can only send one custom header, also set `service_token_header = "X-Access-Token"` (any name). The client then sends that header with a JSON value:
 
